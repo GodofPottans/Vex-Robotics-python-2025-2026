@@ -7,9 +7,9 @@ import math
 brain=Brain()
 
 # Robot configuration code
-MiddleMotor = Motor(Ports.PORT3, GearSetting.RATIO_18_1, False)
 LeftMotor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
 RightMotor = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT3, GearSetting.RATIO_18_1, False)
 
 
 # wait for rotation sensor to fully initialize
@@ -57,24 +57,24 @@ def Move(speed, speed2):
     RightMotor.spin(REVERSE)
 def Coordinate(x, y, angle):
     Newangle = math.atan((x-deltax)/(y-deltay))*(180/Pi)
-    if (Newangle>Heading):
-        while (Heading>Newangle):
+    if (Newangle>Headingtot):
+        while (Headingtot>Newangle):
             Right = Thread(Move(60,40))
         Right.stop()
-    if (Heading>Newangle):
-        while (Heading<Newangle):
+    if (Headingtot>Newangle):
+        while (Headingtot<Newangle):
             Left = Thread(Move(40,60))
         Left.stop()
     Forward = Thread(Move(50,50))
     if (deltax<x+1 and deltax>x-1):
         Forward.stop()
 
-    if (angle>Heading):
-        while (Heading>angle):
+    if (angle>Headingtot):
+        while (Headingtot>angle):
             Right = Thread(Move(60,40))
         Right.stop()
-    if (Heading>angle):
-        while (Heading<angle):
+    if (Headingtot>angle):
+        while (Headingtot<angle):
             Left = Thread(Move(40,60))
         Left.stop()
 # Begin project code
@@ -86,6 +86,7 @@ while (True):
     DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
     DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
     DistanceMiddle = ((3.25*Pi)/360)*(MiddleMotor.position())
+    Headingtot = (DistanceRight-DistanceLeft)/2+Heading
     Heading = (DistanceRight-DistanceLeft)/2
     alpha = Pi-Heading
     Distancetot = (DistanceLeft+DistanceRight)/2
