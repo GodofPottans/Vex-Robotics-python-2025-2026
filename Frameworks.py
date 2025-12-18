@@ -51,8 +51,8 @@ print("\033[2J")
 # Library imports
 from vex import Motor, DirectionType, RotationUnit, port
 def Move(speed, speed2):
-    LeftMotor.set_velocity(50, PERCENT)
-    RightMotor.set_velocity(50, PERCENT)
+    LeftMotor.set_velocity(speed, PERCENT)
+    RightMotor.set_velocity(speed2, PERCENT)
     LeftMotor.spin(FORWARD)
     RightMotor.spin(REVERSE)
 def Coordinate(x, y, angle):
@@ -65,7 +65,7 @@ def Coordinate(x, y, angle):
         while (Headingtot<Newangle):
             Left = Thread(Move(40,60))
         Left.stop()
-    Forward = Thread(Move(50,50))
+    Forward = Thread(Move(100,100))
     if (deltax<x+1 and deltax>x-1):
         Forward.stop()
 
