@@ -56,6 +56,22 @@ def Move(speed, speed2):
     LeftMotor.spin(FORWARD)
     RightMotor.spin(REVERSE)
 def Coordinate(x, y, angle):
+    tot=12
+    distance=1
+    dlist=[1]
+    for n in range tot:
+        ntheta= (n-1)*(360/tot)+ntheta
+        pointx=math.cos(ntheta)
+        pointy=math.sin(netheta)
+        distance=math.sqrt(((x-pointx)**2)+(y-pointy)**2))
+        if (x< & x> & y< & y>):
+            dlist.append(distance)
+        else:
+            dlist.append(99999999999999)
+    tar=dlist.min()
+    target=dlist.indexof(tar)
+    tarangle=(target-1)*(360/tot)
+        
     Newangle = math.atan((x-deltax)/(y-deltay))*(180/Pi)
     if (Newangle>Headingtot):
         while (Headingtot>Newangle):
@@ -77,7 +93,7 @@ def Coordinate(x, y, angle):
         while (Headingtot<angle):
             Left = Thread(Move(40,60))
         Left.stop()
-# Begin project code
+# Begin project cod
 while (True):
     Pi = 3.1415926535897932384626433
     deltax = 0
@@ -92,6 +108,7 @@ while (True):
     Distancetot = (DistanceLeft+DistanceRight)/2
     deltay = (math.sin(alpha)*DistanceMiddle)+deltay
     deltax = (math.cos(alpha)*DistanceMiddle)+deltax+DistanceMiddle
+    
 
 
 
