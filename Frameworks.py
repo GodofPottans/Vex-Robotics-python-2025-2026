@@ -55,59 +55,81 @@ def Move(speed, speed2):
     RightMotor.set_velocity(speed2, PERCENT)
     LeftMotor.spin(FORWARD)
     RightMotor.spin(REVERSE)
-def Coordinate(x, y, angle):
-    tot=12
-    distance=1
-    dlist=[1]
-    for n in range tot:
-        ntheta= (n-1)*(360/tot)+ntheta
-        pointx=math.cos(ntheta)
-        pointy=math.sin(netheta)
-        distance=math.sqrt(((x-pointx)**2)+(y-pointy)**2))
-        if (x< & x> & y< & y>):
-            dlist.append(distance)
-        else:
-            dlist.append(99999999999999)
-    tar=dlist.min()
-    target=dlist.indexof(tar)
-    tarangle=(target-1)*(360/tot)
-        
-    Newangle = math.atan((x-deltax)/(y-deltay))*(180/Pi)
+def Turn(NewAngle):
     if (Newangle>Headingtot):
         while (Headingtot>Newangle):
-            Right = Thread(Move(60,40))
-        Right.stop()
+            Move(60,40)
+        LeftMotor.stop()
+        RightMotor.stop()
     if (Headingtot>Newangle):
         while (Headingtot<Newangle):
-            Left = Thread(Move(40,60))
-        Left.stop()
-    Forward = Thread(Move(100,100))
-    if (deltax<x+1 and deltax>x-1):
-        Forward.stop()
+            Move(40,60)
+        LeftMotor.stop()
+        RightMotor.stop()
+def Coordinate(x, y, angle):
+    tot=12
+    distance=360
+    while(x<x+1 & x>x-1):
+        dlist=[1]
+        for n in range tot:
+            ntheta= (n-1)*(360/tot)+ntheta
+            pointx=math.cos(ntheta)
+            pointy=math.sin(netheta)
+            distance=math.sqrt(((x-pointx)**2)+(y-pointy)**2))
+            if (x< & x> & y< & y>):
+                dlist.append(distance)
+            else:
+                dlist.append(999999999999999999999999999999999999999999999999)
+        tar=dlist.min()
+        target=dlist.indexof(tar)
+        tarangle=(target-1)*(360/tot)
+        Turn(tarangle)
+        LeftMotor.spin_for(FORWARD, distance, DEGREES, wait=False)
+        RightMotor.spin_for(FORWARD, distance, DEGREES)
+        if (x<x+5 & x>x-5 & y<y+5 & y>y-5):
+            break
+        
+    angy = math.atan((x-deltax)/(y-deltay))*(180/Pi)
+    Turn(angy)
+    
+    while((deltax<x+1 & deltax>x-1)==False):
+        Move(100,100))
 
+    LeftMotor.stop()
+    RightMotor.stop()
+    
     if (angle>Headingtot):
         while (Headingtot>angle):
-            Right = Thread(Move(60,40))
-        Right.stop()
+            Move(60,40)
+        LeftMotor.stop()
+        RightMotor.stop()
     if (Headingtot>angle):
         while (Headingtot<angle):
-            Left = Thread(Move(40,60))
-        Left.stop()
+            Move(40,60)
+        LeftMotor.stop()
+        RightMotor.stop()
 # Begin project cod
-while (True):
+def cord_calc():
     Pi = 3.1415926535897932384626433
-    deltax = 0
-    deltay = 0
+    global deltax = 0
+    global deltay = 0
+    #Reset the damn relative position#
     distancetot = 0
     DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
     DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
     DistanceMiddle = ((3.25*Pi)/360)*(MiddleMotor.position())
-    Headingtot = (DistanceRight-DistanceLeft)/2+Heading
-    Heading = (DistanceRight-DistanceLeft)/2
+    global Headingtot = (DistanceRight-DistanceLeft)/2+Heading
+    global Heading = (DistanceRight-DistanceLeft)/2
     alpha = Pi-Heading
     Distancetot = (DistanceLeft+DistanceRight)/2
     deltay = (math.sin(alpha)*DistanceMiddle)+deltay
     deltax = (math.cos(alpha)*DistanceMiddle)+deltax+DistanceMiddle
+
+r = Thread(cord_calc)
+r.daemon = True
+r.start()
+#WRITE MAIN CODE UNDER HERE#
+
     
 
 
