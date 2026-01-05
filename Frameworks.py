@@ -10,6 +10,7 @@ brain=Brain()
 LeftMotor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
 RightMotor = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
 MiddleMotor = Motor(Ports.PORT3, GearSetting.RATIO_18_1, False)
+controller_1 = Controller(PRIMARY)
 
 
 # wait for rotation sensor to fully initialize
@@ -71,15 +72,15 @@ def Coordinate(x, y, angle):
     distance=360
     while(x<x+1 & x>x-1):
         dlist=[1]
-        for n in range tot:
+        for n in range (12):
             ntheta= (n-1)*(360/tot)+ntheta
             pointx=math.cos(ntheta)
             pointy=math.sin(netheta)
-            distance=math.sqrt(((x-pointx)**2)+(y-pointy)**2))
+            distance=math.sqrt(((x-pointx)**2)+((y-pointy)**2))
             if (x< & x> & y< & y>):
                 dlist.append(distance)
             else:
-                dlist.append(999999999999999999999999999999999999999999999999)
+                dlist.append(99999999999999999999999999999999999)
         tar=dlist.min()
         target=dlist.indexof(tar)
         tarangle=(target-1)*(360/tot)
@@ -93,7 +94,7 @@ def Coordinate(x, y, angle):
     Turn(angy)
     
     while((deltax<x+1 & deltax>x-1)==False):
-        Move(100,100))
+        Move(100,100)
 
     LeftMotor.stop()
     RightMotor.stop()
@@ -118,12 +119,12 @@ def cord_calc():
     DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
     DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
     DistanceMiddle = ((3.25*Pi)/360)*(MiddleMotor.position())
-    global Headingtot = (DistanceRight-DistanceLeft)/2+Heading
-    global Heading = (DistanceRight-DistanceLeft)/2
+    global Headingtot = (DistanceRight-DistanceLeft)/2
+    r = ((90/Headingtot)*(DistanceLeft+DistanceRight))/Pi
     alpha = Pi-Heading
     Distancetot = (DistanceLeft+DistanceRight)/2
-    deltay = (math.sin(alpha)*DistanceMiddle)+deltay
-    deltax = (math.cos(alpha)*DistanceMiddle)+deltax+DistanceMiddle
+    y = (math.sin(Headingtot)*r)
+    deltax = (r-(math.cos(Headingtot)*r))+DistanceMiddle
 
 r = Thread(cord_calc)
 r.daemon = True
