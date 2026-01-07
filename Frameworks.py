@@ -71,11 +71,12 @@ def Coordinate(x, y, angle):
     tot=12
     distance=360
     while(x<x+1 & x>x-1):
+        x,y = cord_calc()
         dlist=[1]
         for n in range (12):
             ntheta= (n-1)*(360/tot)+ntheta
             pointx=math.cos(ntheta)
-            pointy=math.sin(netheta)
+            pointy=math.sin(ntheta)
             distance=math.sqrt(((x-pointx)**2)+((y-pointy)**2))
             if (x< & x> & y< & y>):
                 dlist.append(distance)
@@ -125,10 +126,11 @@ def cord_calc():
     Distancetot = (DistanceLeft+DistanceRight)/2
     y = (math.sin(Headingtot)*r)
     deltax = (r-(math.cos(Headingtot)*r))+DistanceMiddle
-
-r = Thread(cord_calc)
-r.daemon = True
-r.start()
+    deltay = (math.sin(Headingtot))
+    return deltax, deltay
+def main():
+    
+main()
 #WRITE MAIN CODE UNDER HERE#
 
     
