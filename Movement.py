@@ -66,8 +66,7 @@ wait(30, MSEC)
 
 def deadzone(value):
     if abs(value) < 5:
-        return 0
-    return value
+        value = 0
 
 def clamp(value, minimum, maximum):
     return max(minimum, min(maximum, value))
