@@ -50,20 +50,21 @@ print("\033[2J")
 # ------------------------------------------
 
 # Library imports
-from vex import Motor, DirectionType, RotationUnit, port
+from vex import Motor, DirectionType
+Pi = 3.1415926535897932384626433
 def Move(speed, speed2):
     LeftMotor.set_velocity(speed, PERCENT)
     RightMotor.set_velocity(speed2, PERCENT)
     LeftMotor.spin(FORWARD)
     RightMotor.spin(REVERSE)
 def Turn(NewAngle):
-    if (Newangle>Headingtot):
-        while (Headingtot>Newangle):
+    if (NewAngle>Headingtot):
+        while (Headingtot>NewAngle):
             Move(60,40)
         LeftMotor.stop()
         RightMotor.stop()
-    if (Headingtot>Newangle):
-        while (Headingtot<Newangle):
+    if (Headingtot>NewAngle):
+        while (Headingtot<NewAngle):
             Move(40,60)
         LeftMotor.stop()
         RightMotor.stop()
@@ -78,12 +79,12 @@ def Coordinate(x, y, angle):
             pointx=math.cos(ntheta)
             pointy=math.sin(ntheta)
             distance=math.sqrt(((x-pointx)**2)+((y-pointy)**2))
-            if (x< & x> & y< & y>):
+            if (x<4 & x>5 & y<8 & y>2):
                 dlist.append(distance)
             else:
                 dlist.append(99999999999999999999999999999999999)
-        tar=dlist.min()
-        target=dlist.indexof(tar)
+        tar=min(dlist)
+        target=dlist.index(tar)
         tarangle=(target-1)*(360/tot)
         Turn(tarangle)
         LeftMotor.spin_for(FORWARD, distance, DEGREES, wait=False)
@@ -110,31 +111,20 @@ def Coordinate(x, y, angle):
             Move(40,60)
         LeftMotor.stop()
         RightMotor.stop()
-# Begin project cod
 def cord_calc():
-    Pi = 3.1415926535897932384626433
-    global deltax = 0
-    global deltay = 0
+    global deltay, deltax, Headingtot
+    deltax = 0
+    deltay = 0
     #Reset the damn relative position#
     distancetot = 0
     DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
     DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
     DistanceMiddle = ((3.25*Pi)/360)*(MiddleMotor.position())
-    global Headingtot = (DistanceRight-DistanceLeft)/2
+    Headingtot = (DistanceRight-DistanceLeft)/2
     r = ((90/Headingtot)*(DistanceLeft+DistanceRight))/Pi
-    alpha = Pi-Heading
     Distancetot = (DistanceLeft+DistanceRight)/2
     y = (math.sin(Headingtot)*r)
     deltax = (r-(math.cos(Headingtot)*r))+DistanceMiddle
     deltay = (math.sin(Headingtot))
     return deltax, deltay
-def main():
-    
-main()
-#WRITE MAIN CODE UNDER HERE#
-
-    
-
-
-
-    
+ 
