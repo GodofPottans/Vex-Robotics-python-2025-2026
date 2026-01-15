@@ -82,7 +82,7 @@ def Coordinate(x, y, angle):
             if (x<4 & x>5 & y<8 & y>2):
                 dlist.append(distance)
             else:
-                dlist.append(99999999999999999999999999999999999)
+                dlist.append(999999999999999999999999999999999999)
         tar=min(dlist)
         target=dlist.index(tar)
         tarangle=(target-1)*(360/tot)
@@ -117,14 +117,87 @@ def cord_calc():
     deltay = 0
     #Reset the damn relative position#
     distancetot = 0
+    axletrack = 8.25
     DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
     DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
     DistanceMiddle = ((3.25*Pi)/360)*(MiddleMotor.position())
     Headingtot = (DistanceRight-DistanceLeft)/2
     r = ((90/Headingtot)*(DistanceLeft+DistanceRight))/Pi
+    c = 2*(DistanceRight/Headingtot+(axletrack/2))*(math.sin(Headingtot/2))
     Distancetot = (DistanceLeft+DistanceRight)/2
-    y = (math.sin(Headingtot)*r)
-    deltax = (r-(math.cos(Headingtot)*r))+DistanceMiddle
-    deltay = (math.sin(Headingtot))
+    deltax = ((math.cos((Pi-Headingtot)/2)*c))+DistanceMiddle
+    deltay = (math.sin(Headingtot)*r)
     return deltax, deltay
- 
+
+LeftMotor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
+RightMotor = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT3, GearSetting.RATIO_18_1, False)
+
+wait(30, MSEC)
+
+def deadzone(value):
+    if abs(value) < 5:
+        value = 0
+    return value
+
+def clamp(value, minimum, maximum):
+    return max(minimum, min(maximum, value))
+
+def exp_ramp(current, target, gain):
+    return current + (target - current) * gain
+
+def snap(value, threshold=1): 
+    return 0 if abs(value) < threshold else value
+
+RAMP_GAIN = 0.2   # 0 < gain < 1
+
+current_left = 0
+current_right = 0
+current_horiz = 0
+
+while True:
+
+    MAX_SPEED = 80
+
+    # Read joysticks
+    vert_movement = deadzone(controller_1.axis2.position())
+    horiz_movement = deadzone(controller_1.axis1.position())
+    turn_amount = deadzone(controller_1.axis4.position())
+
+    # Scale speed
+    vert_movement = vert_movement * MAX_SPEED / 100
+    horiz_movement = horiz_movement * MAX_SPEED / 100
+    turn_amount = turn_amount * MAX_SPEED / 100
+
+    # Target motor speeds
+    target_left = vert_movement + turn_amount
+    target_right = vert_movement - turn_amount
+    target_horiz = horiz_movement
+
+    # Prevent speeds from exeeding +-100%
+    target_left = clamp(target_left, -100, 100)
+    target_right = clamp(target_right, -100, 100)
+    target_horiz = clamp(target_horiz, -100, 100)
+
+
+    # Smooth acceleration
+    current_left = exp_ramp(current_left, target_left, RAMP_GAIN)
+    current_right = exp_ramp(current_right, target_right, RAMP_GAIN)
+    current_horiz = exp_ramp(current_horiz, target_horiz, RAMP_GAIN)
+
+    # Smooth stops
+    current_left = snap(current_left)
+    current_right = snap(current_right)
+    current_horiz = snap(current_horiz)
+
+    # Apply speeds
+    LeftMotor.set_velocity(current_left, PERCENT)
+    RightMotor.set_velocity(current_right, PERCENT)
+    MiddleMotor.set_velocity(current_horiz, PERCENT)
+
+    LeftMotor.spin(FORWARD)
+    RightMotor.spin(FORWARD)
+    MiddleMotor.spin(FORWARD)
+
+    print(cord_calc())
+    wait(50, MSEC)
