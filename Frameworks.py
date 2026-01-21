@@ -7,10 +7,16 @@ import math
 brain=Brain()
 
 # Robot configuration code
+LeftMotor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, False)
+RightMotor = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT3, GearSetting.RATIO_18_1, False)
 controller_1 = Controller(PRIMARY)
-LeftMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, True)
-RightMotor = Motor(Ports.PORT12, GearSetting.RATIO_18_1, False)
-MiddleMotor = Motor(Ports.PORT11, GearSetting.RATIO_18_1, False)
+ClampMotor = Motor29(brain.three_wire_port.a, False)
+BaseMotor = Motor29(brain.three_wire_port.b, False)
+ElbowMotor = Motor29(brain.three_wire_port.c, False)
+BasePot = Potentiometer(brain.three_wire_port.d)
+ElbowPot = Potentiometer(brain.three_wire_port.e)
+controller_2 = Controller(PARTNER)
 
 
 # wait for rotation sensor to fully initialize
@@ -125,9 +131,14 @@ def cord_calc():
     r = ((90/Headingtot)*(DistanceLeft+DistanceRight))/Pi
     c = 2*(DistanceRight/Headingtot+(axletrack/2))*(math.sin(Headingtot/2))
     Distancetot = (DistanceLeft+DistanceRight)/2
-    deltax = ((math.cos((Pi-Headingtot)/2)*c))+DistanceMiddle+0.01
-    deltay = (math.sin(Headingtot)*r)+0.01
+    deltax = ((math.cos((Pi-Headingtot)/2)*c))+DistanceMiddle
+    deltay = (math.sin(Headingtot)*r)
     return deltax, deltay
+
+LeftMotor = Motor(Ports.PORT11, GearSetting.RATIO_18_1, True)
+RightMotor = Motor(Ports.PORT12, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, False)
+
 wait(30, MSEC)
 
 def deadzone(value):
@@ -153,12 +164,11 @@ current_horiz = 0
 while True:
 
     MAX_SPEED = 80
-    brain.screen.clear_row(1)
 
     # Read joysticks
     vert_movement = deadzone(controller_1.axis2.position())
-    horiz_movement = deadzone(-1*controller_1.axis1.position())
-    turn_amount = deadzone(-1*controller_1.axis4.position())
+    horiz_movement = deadzone(controller_1.axis1.position())
+    turn_amount = deadzone(controller_1.axis4.position())
 
     # Scale speed
     vert_movement = vert_movement * MAX_SPEED / 100
@@ -194,6 +204,22 @@ while True:
     LeftMotor.spin(FORWARD)
     RightMotor.spin(FORWARD)
     MiddleMotor.spin(FORWARD)
-  
+    if (controller_1.buttonR1.pressed):
+        ClampMotor.set_velocity(50, PERCENT)
+        ClampMotor2.set_velocity(50, PERCENT)
+        ClampMotor.spin(FORWARD)
+        ClampMotor2.spin(FORWARD)
+    elif (controller_1.buttonR1.released):
+        ClampMotor.stop()
+        ClampMotor2.stop()
+    if (controller_1.buttonL1.pressed):
+        ClampMotor.set_velocity(-50, PERCENT)
+        ClampMotor2.set_velocity(-50, PERCENT)
+        ClampMotor.spin(FORWARD)
+        ClampMotor2.spin(FORWARD)
+    elif (controller_1.buttonL1.released):
+        ClampMotor.stop()
+        ClampMotor2.stop()
     brain.screen.print(cord_calc())
+    brain.screen.next_row()
     wait(20, MSEC)
