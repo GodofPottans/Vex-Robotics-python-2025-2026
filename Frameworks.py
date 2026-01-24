@@ -58,8 +58,14 @@ print("\033[2J")
 # Library imports
 from vex import Motor, DirectionType
 Pi = 3.1415926535897932384626433
-x1=0.0
-y1=0.0
+x1=10.0
+y1=10.0
+pB = 0.6
+pE = 0.6
+iB = 0.6
+iE = 0.6
+dB = 0.6
+dE = 0.6
 def IK_calc(x, y):
     SE = 10
     EG = 10
@@ -233,6 +239,7 @@ while True:
         ClampMotor.spin(FORWARD)
     elif (controller_2.buttonL1.released):
         ClampMotor.stop()    
+
     if (controller_2.buttonUp.pressing()):
         y1 = y1 + 0.1
         wait(5, MSEC)
@@ -246,16 +253,20 @@ while True:
         x1 = x1 - 0.1
         wait(5, MSEC)
     IK_calc(x1, y1) = angle2, angle1
-    while(BasePot.angle()>angle1+0.5):
-        BaseMotor.spin(REVERSE)
-    while(BasePot.angle()<angle1-0.5):
-        BaseMotor.spin(FORWARD)
-    while(ElbowPot.angle()>angle2+0.5):
-        ElbowMotor.spin(REVERSE)
-    while(ElbowPot.angle()>angle2-0.5):
-        ElbowMotor.spin(FORWARD)
-    BaseMotor.stop()
-    ElbowMotor.stop()
+    CBangle = BasePot.angle()
+    CEangle = ElbowPot.angle()
+    if (CBangle>(angle1-5) && CBangle<(angle+5)):
+        Berror = 0
+    else:
+        Berror = (CBangle-angle1)*(11/36)
+    if (CEangle>(angle2-5) && CEangle<(angle2+5)):
+        Eerror = 0
+    else:
+        Eerror = (CEangle-angle2)*(11/36)
+    Bspeed = pB*Berror
+    Espeed = pE*Eerror
+    BaseMotor.set_velocity(Bspeed, PERCENT)
+    ElbowMotor.set_velocity(Espeed, PERCENT)
     brain.screen.print(cord_calc() + "Max Speed: ", MAX_SPEED)
     brain.screen.next_row()
     wait(20, MSEC)
