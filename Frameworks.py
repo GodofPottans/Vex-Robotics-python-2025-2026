@@ -8,9 +8,9 @@ brain=Brain()
 
 # Robot configuration code
 controller_1 = Controller(PRIMARY)
-MiddleMotor = Motor(Ports.PORT11, GearSetting.RATIO_18_1, False)
-LeftMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, True)
-RightMotor = Motor(Ports.PORT12, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT5, GearSetting.RATIO_18_1, False)
+LeftMotor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
+RightMotor = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
 ClampMotor = Motor29(brain.three_wire_port.a, False)
 BaseMotor = Motor29(brain.three_wire_port.b, False)
 ElbowMotor = Motor29(brain.three_wire_port.c, False)
