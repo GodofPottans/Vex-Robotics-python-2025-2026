@@ -67,8 +67,8 @@ iE = 0.6
 dB = 0.6
 dE = 0.6
 def IK_calc(x, y):
-    SE = 10
-    EG = 10
+    SE = 7.5
+    EG = 7.5
     c = math.sqrt(x**2+y**2)
     EAngle = ((math.acos(SE**2+EG**2-c**2))/(2*SE*EG))*(180/Pi)
     SAngle = ((math.acos(SE**2+c**2-EG**2))/(2*SE*c))*(180/Pi)
