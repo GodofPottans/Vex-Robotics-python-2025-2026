@@ -253,8 +253,8 @@ while True:
         x1 = x1 - 0.1
         wait(5, MSEC)
     IK_calc(x1, y1) = angle2, angle1
-    CBangle = BasePot.angle()
-    CEangle = ElbowPot.angle()
+    CBangle = BasePot.angle()*(180/4095)
+    CEangle = ElbowPot.angle()*(180/4195)
     if (CBangle>(angle1-5) && CBangle<(angle+5)):
         Berror = 0
     else:
