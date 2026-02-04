@@ -58,20 +58,21 @@ print("\033[2J")
 # Library imports
 from vex import Motor, DirectionType
 Pi = 3.1415926535897932384626433
-x1=10.0
-y1=10.0
+x1=7.5
+y1=7.5
 pB = 0.6
 pE = 0.6
 iB = 0.6
 iE = 0.6
 dB = 0.6
 dE = 0.6
+iklist = [0,0]
 def IK_calc(x, y):
     SE = 7.5
     EG = 7.5
     c = math.sqrt(x**2+y**2)
-    EAngle = ((math.acos(SE**2+EG**2-c**2))/(2*SE*EG))*(180/Pi)
-    SAngle = ((math.acos(SE**2+c**2-EG**2))/(2*SE*c))*(180/Pi)
+    EAngle = (math.acos((SE**2+EG**2-c**2)/(2*SE*EG))*(180/Pi))
+    SAngle = (math.acos((SE**2+c**2-EG**2)/(2*SE*c))*(180/Pi))
     return EAngle, SAngle
 def Move(speed, speed2):
     LeftMotor.set_velocity(speed, PERCENT)
@@ -110,7 +111,7 @@ def Coordinate(x, y, angle):
         Turn(tarangle)
         LeftMotor.spin_for(FORWARD, distance, DEGREES, wait=False)
         RightMotor.spin_for(FORWARD, distance, DEGREES)
-        if (x<x+5 & x>x-5 & y<y+5 & y>y-5):
+        if (x-5<x<x+5 and y-5<y<y+5):
             break
        
     angy = math.atan((x-deltax)/(y-deltay))*(180/Pi)
@@ -252,14 +253,16 @@ while True:
     if (controller_2.buttonLeft.pressing()):
         x1 = x1 - 0.1
         wait(5, MSEC)
-    IK_calc(x1, y1) = angle2, angle1
+    iklist = IK_calc(x1, y1)
+    angle1 = iklist[0]
+    angle2 = iklist[1]
     CBangle = BasePot.angle()*(180/4095)
     CEangle = ElbowPot.angle()*(180/4195)
-    if (CBangle>(angle1-5) && CBangle<(angle+5)):
+    if (CBangle>(angle1-5) & CBangle<(angle1+5)):
         Berror = 0
     else:
         Berror = (CBangle-angle1)*(11/36)
-    if (CEangle>(angle2-5) && CEangle<(angle2+5)):
+    if (CEangle>(angle2-5) & CEangle<(angle2+5)):
         Eerror = 0
     else:
         Eerror = (CEangle-angle2)*(11/36)
