@@ -7,10 +7,10 @@ import math
 brain=Brain()
 
 # Robot configuration code
-controller_1 = Controller(PRIMARY)
-MiddleMotor = Motor(Ports.PORT14, GearSetting.RATIO_18_1, False)
-LeftMotor = Motor(Ports.PORT15, GearSetting.RATIO_18_1, True)
+LeftMotor = Motor(Ports.PORT15, GearSetting.RATIO_18_1, False)
 RightMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT14, GearSetting.RATIO_18_1, False)
+controller_1 = Controller(PRIMARY)
 ClampMotor = Motor29(brain.three_wire_port.a, False)
 BaseMotor = Motor29(brain.three_wire_port.b, False)
 ElbowMotor = Motor29(brain.three_wire_port.c, False)
@@ -254,22 +254,25 @@ while True:
         x1 = x1 - 0.1
         wait(5, MSEC)
     iklist = IK_calc(x1, y1)
-    angle1 = iklist[0]
-    angle2 = iklist[1]
-    CBangle = BasePot.angle()*(180/4095)
-    CEangle = ElbowPot.angle()*(180/4195)
-    if (CBangle>(angle1-5) & CBangle<(angle1+5)):
+    angle1 = float(iklist[0])
+    angle2 = float(iklist[1])
+    CBangle = float(BasePot.angle())*(270.0/4095.0)+0.1
+    CEangle = float(ElbowPot.angle())*(270.0/4095.0)+0.1
+    if (CBangle>(angle1-5.0) and CBangle<(angle1+5.0)):
         Berror = 0
     else:
-        Berror = (CBangle-angle1)*(11/36)
-    if (CEangle>(angle2-5) & CEangle<(angle2+5)):
+        Berror = (CBangle-angle1)*(11./36.)
+    if (CEangle>(angle2-5.0) and CEangle<(angle2+5.0)):
         Eerror = 0
     else:
         Eerror = (CEangle-angle2)*(11/36)
     Bspeed = pB*Berror
     Espeed = pE*Eerror
-    BaseMotor.set_velocity(Bspeed, PERCENT)
-    ElbowMotor.set_velocity(Espeed, PERCENT)
-    brain.screen.print(cord_calc() + "Max Speed: ", MAX_SPEED)
+    BaseMotor.set_velocity(int(Bspeed), PERCENT)
+    ElbowMotor.set_velocity(int(Espeed), PERCENT)
+    xey,yey = cord_calc()
+    brain.screen.print(xey)
+    brain.screen.print(" ")
+    brain.screen.print(yey)
     brain.screen.next_row()
     wait(20, MSEC)
