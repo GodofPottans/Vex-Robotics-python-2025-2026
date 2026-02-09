@@ -57,6 +57,10 @@ print("\033[2J")
 
 # Library imports
 from vex import Motor, DirectionType
+
+LeftMotor = Motor(Ports.PORT15, GearSetting.RATIO_18_1, True)
+RightMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT14, GearSetting.RATIO_18_1, False) 
 Pi = 3.1415926535897932384626433
 x1=7.5
 y1=7.5
@@ -66,13 +70,14 @@ iB = 0.6
 iE = 0.6
 dB = 0.6
 dE = 0.6
-iklist = [0,0]
 def IK_calc(x, y):
+    global EAngle, SAngle
     SE = 7.5
     EG = 7.5
-    c = math.sqrt(x**2+y**2)
-    EAngle = (math.acos((SE**2+EG**2-c**2)/(2*SE*EG))*(180/Pi))
-    SAngle = (math.acos((SE**2+c**2-EG**2)/(2*SE*c))*(180/Pi))
+    c=math.pow(x,2)+math.pow(y,2)
+    c = math.sqrt(math.fabs(c))
+    EAngle = math.atan(math.pow(SE,2)+math.pow(EG,2)-math.pow(c,2)/(2*SE*EG))*(180/Pi)
+    SAngle = (math.atan((SE**2+c**2-EG**2)/(2*SE*c))*(180/Pi))
     return EAngle, SAngle
 def Move(speed, speed2):
     LeftMotor.set_velocity(speed, PERCENT)
@@ -142,18 +147,16 @@ def cord_calc():
     axletrack = 8.25
     DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
     DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
-    DistanceMiddle = ((3.25*Pi)/360)*(MiddleMotor.position())
+    DistanceMiddle = ((1.625*Pi)/360)*(MiddleMotor.position())
     Headingtot = (DistanceRight-DistanceLeft)/2+0.001
     r = ((90/Headingtot)*(DistanceLeft+DistanceRight))/Pi
     c = 2*(DistanceRight/Headingtot+(axletrack/2))*(math.sin(Headingtot/2))
     Distancetot = (DistanceLeft+DistanceRight)/2
     deltax = ((math.cos((Pi-Headingtot)/2)*c))+DistanceMiddle
     deltay = (math.sin(Headingtot)*r)
-    return deltax, deltay
+    deltay = deltay/20
+    return deltax, deltay, DistanceMiddle
 
-LeftMotor = Motor(Ports.PORT11, GearSetting.RATIO_18_1, True)
-RightMotor = Motor(Ports.PORT12, GearSetting.RATIO_18_1, False)
-MiddleMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, False)
 
 wait(30, MSEC)
 
@@ -176,7 +179,7 @@ RAMP_GAIN = 0.2   # 0 < gain < 1
 current_left = 0
 current_right = 0
 current_horiz = 0
-
+#Coordinate(10,10,45)
 while True:
 
     MAX_SPEED = 80
@@ -253,9 +256,11 @@ while True:
     if (controller_2.buttonLeft.pressing()):
         x1 = x1 - 0.1
         wait(5, MSEC)
-    iklist = IK_calc(x1, y1)
-    angle1 = float(iklist[0])
-    angle2 = float(iklist[1])
+        print(x1)
+        print(y1)
+    IK_calc(x1, y1)
+    angle1 = EAngle
+    angle2 = SAngle
     CBangle = float(BasePot.angle())*(270.0/4095.0)+0.1
     CEangle = float(ElbowPot.angle())*(270.0/4095.0)+0.1
     if (CBangle>(angle1-5.0) and CBangle<(angle1+5.0)):
@@ -270,9 +275,11 @@ while True:
     Espeed = pE*Eerror
     BaseMotor.set_velocity(int(Bspeed), PERCENT)
     ElbowMotor.set_velocity(int(Espeed), PERCENT)
-    xey,yey = cord_calc()
-    brain.screen.print(xey)
-    brain.screen.print(" ")
-    brain.screen.print(yey)
-    brain.screen.next_row()
+    xey,yey, DistanceMiddle = cord_calc()
+    print(x1)
+    print(y1)
+    #brain.screen.print(xey)
+    #brain.screen.print(" ")
+    #brain.screen.print(yey)
+    #brain.screen.next_row()
     wait(20, MSEC)
