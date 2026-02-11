@@ -7,10 +7,16 @@ import math
 brain=Brain()
 
 # Robot configuration code
+LeftMotor = Motor(Ports.PORT15, GearSetting.RATIO_18_1, False)
+RightMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, False)
+MiddleMotor = Motor(Ports.PORT14, GearSetting.RATIO_18_1, False)
 controller_1 = Controller(PRIMARY)
-LeftMotor = Motor(Ports.PORT11, GearSetting.RATIO_18_1, True)
-RightMotor = Motor(Ports.PORT12, GearSetting.RATIO_18_1, False)
-MiddleMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, False)
+ClampMotor = Motor29(brain.three_wire_port.a, False)
+BaseMotor = Motor29(brain.three_wire_port.b, False)
+ElbowMotor = Motor29(brain.three_wire_port.c, False)
+BasePot = Potentiometer(brain.three_wire_port.d)
+ElbowPot = Potentiometer(brain.three_wire_port.e)
+controller_2 = Controller(PARTNER)
 
 
 # wait for rotation sensor to fully initialize
@@ -41,26 +47,114 @@ print("\033[2J")
 #endregion VEXcode Generated Robot Configuration
 
 # ------------------------------------------
-# 
-# 	Project:      VEXcode Project
-#	Author:       VEX
-#	Created:
-#	Description:  VEXcode V5 Python Project
-# 
+#
+# Project:      VEXcode Project
+# Author:       VEX
+# Created:
+# Description:  VEXcode V5 Python Project
+#
 # ------------------------------------------
 
 # Library imports
 from vex import Motor, DirectionType
 
-# Begin project code
+def clamp(value, minimum, maximum):
+    return max(minimum, min(maximum, value))
+Pi = 3.1415926535897932384626433
+x1=7.5
+y1=7.5
+pB = 0.6
+pE = 0.6
+iB = 0.6
+iE = 0.6
+dB = 0.6
+dE = 0.6
+def IK_calc(x, y):
+    global EAngle, SAngle
+    SE = 7.5
+    EG = 7.5
+    c=math.pow(x,2)+math.pow(y,2)
+    c = math.sqrt(math.fabs(c))
+    EAngle = math.acos(clamp(SE**2+EG**2-c**2/(2*SE*EG), -1, 1))*(180/Pi)
+    SAngle = math.acos(clamp(SE**2+c**2-EG**2/(2*SE*c), -1, 1))*(180/Pi)
+    return EAngle, SAngle
+def Move(speed, speed2):
+    LeftMotor.set_velocity(speed, PERCENT)
+    RightMotor.set_velocity(speed2, PERCENT)
+    LeftMotor.spin(FORWARD)
+    RightMotor.spin(REVERSE)
+def Turn(NewAngle):
+    if (NewAngle>Headingtot):
+        while (Headingtot>NewAngle):
+            Move(60,40)
+        LeftMotor.stop()
+        RightMotor.stop()
+    if (Headingtot>NewAngle):
+        while (Headingtot<NewAngle):
+            Move(40,60)
+        LeftMotor.stop()
+        RightMotor.stop()
+def Coordinate(x, y, angle):
+    tot=12
+    distance=360
+    while(x<x+1 and x>x-1):
+        x,y = cord_calc()
+        dlist=[1]
+        for n in range (12):
+            ntheta= (n-1)*(360/tot)+ntheta
+            pointx=math.cos(ntheta)
+            pointy=math.sin(ntheta)
+            distance=math.sqrt(((x-pointx)**2)+((y-pointy)**2))
+            if (x<4 and x>5 and y<8 and y>2):
+                dlist.append(distance)
+            else:
+                dlist.append(999999999999999999999999999999999999)
+        tar=min(dlist)
+        target=dlist.index(tar)
+        tarangle=(target-1)*(360/tot)
+        Turn(tarangle)
+        LeftMotor.spin_for(FORWARD, distance, DEGREES, wait=False)
+        RightMotor.spin_for(FORWARD, distance, DEGREES)
+        if (x-5<x<x+5 and y-5<y<y+5):
+            break
+       
+    angy = math.atan((x-deltax)/(y-deltay))*(180/Pi)
+    Turn(angy)
+   
+    while((deltax<x+1 and deltax>x-1)==False):
+        Move(100,100)             
+    LeftMotor.stop()
+    RightMotor.stop()
+   
+    if (angle>Headingtot):
+        while (Headingtot>angle):
+            Move(60,40)
+        LeftMotor.stop()
+        RightMotor.stop()
+    if (Headingtot>angle):
+        while (Headingtot<angle):
+            Move(40,60)
+        LeftMotor.stop()
+        RightMotor.stop()
+def cord_calc():
+    global deltay, deltax, Headingtot
+    deltax = 0
+    deltay = 0
+    #Reset the damn relative position#
+    distancetot = 0
+    axletrack = 10
+    DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
+    DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
+    DistanceMiddle = ((1.625*Pi)/360)*(MiddleMotor.position())
+    Headingtot = (DistanceRight-DistanceLeft)/axletrack+0.001
+    r = ((90/Headingtot)*(DistanceLeft+DistanceRight))/Pi
+    c = 2*(DistanceRight/Headingtot+(axletrack/2))*(math.sin(Headingtot/2))
+    Distancetot = (DistanceLeft+DistanceRight)/2
+    deltax = ((math.cos((Pi-Headingtot)/2)*c))+DistanceMiddle
+    deltay = (math.sin(Headingtot)*r)
+    deltay = deltay/20
+    return deltax, deltay, DistanceMiddle
 
-brain = Brain()
-controller = Controller()
-
-
-LeftMotor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
-RightMotor = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
-MiddleMotor = Motor(Ports.PORT3, GearSetting.RATIO_18_1, False)
 
 wait(30, MSEC)
 
@@ -69,13 +163,10 @@ def deadzone(value):
         value = 0
     return value
 
-def clamp(value, minimum, maximum):
-    return max(minimum, min(maximum, value))
-
 def exp_ramp(current, target, gain):
     return current + (target - current) * gain
 
-def snap(value, threshold=1): 
+def snap(value, threshold=1):
     return 0 if abs(value) < threshold else value
 
 RAMP_GAIN = 0.2   # 0 < gain < 1
@@ -83,15 +174,25 @@ RAMP_GAIN = 0.2   # 0 < gain < 1
 current_left = 0
 current_right = 0
 current_horiz = 0
-
+#Coordinate(10,10,45)
 while True:
 
     MAX_SPEED = 80
+    SPEED_STEP = 10
 
     # Read joysticks
-    vert_movement = deadzone(controller.axis2.position())
-    horiz_movement = deadzone(controller.axis1.position())
-    turn_amount = deadzone(controller.axis4.position())
+    vert_movement = deadzone(controller_1.axis2.position())
+    horiz_movement = deadzone(controller_1.axis1.position())
+    turn_amount = deadzone(controller_1.axis4.position())
+
+    if controller_1.buttonUp.pressing():
+        MAX_SPEED += SPEED_STEP
+        wait(200, MSEC)
+
+    if controller_1.buttonDown.pressing():
+        MAX_SPEED -= SPEED_STEP
+        wait(200, MSEC)
+
 
     # Scale speed
     vert_movement = vert_movement * MAX_SPEED / 100
@@ -127,5 +228,53 @@ while True:
     LeftMotor.spin(FORWARD)
     RightMotor.spin(FORWARD)
     MiddleMotor.spin(FORWARD)
+    if (controller_2.buttonR1.pressing()):
+        ClampMotor.set_velocity(50, PERCENT)
+        ClampMotor.spin(FORWARD)
+    elif (controller_2.buttonR1.released):
+        ClampMotor.stop()
+    if (controller_2.buttonL1.pressing()):
+        ClampMotor.set_velocity(-50, PERCENT)
+        ClampMotor.spin(FORWARD)
+    elif (controller_2.buttonL1.released):
+        ClampMotor.stop()    
 
-    wait(20, MSEC) 
+    if (controller_2.buttonUp.pressing()):
+        y1 = y1 + 0.1
+        wait(5, MSEC)
+    if (controller_2.buttonDown.pressing()):
+        y1 = y1 - 0.1
+        wait(5, MSEC)
+    if (controller_2.buttonRight.pressing()):
+        x1 = x1 + 0.1
+        wait(5, MSEC)
+    if (controller_2.buttonLeft.pressing()):
+        x1 = x1 - 0.1
+        wait(5, MSEC)
+        print(x1)
+        print(y1)
+    EAngle, SAngle = IK_calc(x1, y1)
+    angle1 = EAngle
+    angle2 = SAngle
+    CBangle = float(BasePot.angle())*(270.0/4095.0)+0.1
+    CEangle = float(ElbowPot.angle())*(270.0/4095.0)+0.1
+    if (CBangle>(angle1-5.0) and CBangle<(angle1+5.0)):
+        Berror = 0
+    else:
+        Berror = (CBangle-angle1)*(11./36.)
+    if (CEangle>(angle2-5.0) and CEangle<(angle2+5.0)):
+        Eerror = 0
+    else:
+        Eerror = (CEangle-angle2)*(11/36)
+    Bspeed = pB*Berror
+    Espeed = pE*Eerror
+    BaseMotor.set_velocity(int(Bspeed), PERCENT)
+    ElbowMotor.set_velocity(int(Espeed), PERCENT)
+    xey,yey, DistanceMiddle = cord_calc()
+    print(x1)
+    print(y1)
+    #brain.screen.print(xey)
+    #brain.screen.print(" ")
+    #brain.screen.print(yey)
+    #brain.screen.next_row()
+    wait(20, MSEC)
