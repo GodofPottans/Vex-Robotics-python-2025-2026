@@ -63,8 +63,8 @@ def clamp(value, minimum, maximum):
 Pi = 3.1415926535897932384626433
 x1=7.5
 y1=7.5
-pB = 0.6
-pE = 0.6
+pB = 1
+pE = 1
 iB = 0.6
 iE = 0.6
 dB = 0.6
@@ -75,8 +75,8 @@ def IK_calc(x, y):
     EG = 7.5
     c=math.pow(x,2)+math.pow(y,2)
     c = math.sqrt(math.fabs(c))
-    EAngle = math.acos(clamp(SE**2+EG**2-c**2/(2*SE*EG), -1, 1))*(180/Pi)
-    SAngle = math.acos(clamp(SE**2+c**2-EG**2/(2*SE*c), -1, 1))*(180/Pi)
+    EAngle = math.acos(clamp((SE**2+EG**2-c**2)/(2*SE*EG), -1, 1))*(180/Pi)
+    SAngle = math.acos(clamp((SE**2+c**2-EG**2)/(2*SE*c), -1, 1))*(180/Pi)
     return EAngle, SAngle
 def Move(speed, speed2):
     LeftMotor.set_velocity(speed, PERCENT)
@@ -228,51 +228,53 @@ while True:
     LeftMotor.spin(FORWARD)
     RightMotor.spin(FORWARD)
     MiddleMotor.spin(FORWARD)
-    if (controller_2.buttonR1.pressing()):
+    if (controller_2.buttonL1.pressing()):
+        ClampMotor.set_velocity(50, PERCENT)
+        print("close")
+        ClampMotor.spin(REVERSE) 
+    elif (controller_2.buttonR1.pressing()):
         ClampMotor.set_velocity(50, PERCENT)
         ClampMotor.spin(FORWARD)
-    elif (controller_2.buttonR1.released):
-        ClampMotor.stop()
-    if (controller_2.buttonL1.pressing()):
-        ClampMotor.set_velocity(-50, PERCENT)
-        ClampMotor.spin(FORWARD)
-    elif (controller_2.buttonL1.released):
+        print("open")
+    else:
         ClampMotor.stop()    
 
     if (controller_2.buttonUp.pressing()):
-        y1 = y1 + 0.1
-        wait(5, MSEC)
-    if (controller_2.buttonDown.pressing()):
         y1 = y1 - 0.1
         wait(5, MSEC)
-    if (controller_2.buttonRight.pressing()):
-        x1 = x1 + 0.1
+    if (controller_2.buttonDown.pressing()):
+        y1 = y1 + 0.1
         wait(5, MSEC)
-    if (controller_2.buttonLeft.pressing()):
+    if (controller_2.buttonRight.pressing()):
         x1 = x1 - 0.1
         wait(5, MSEC)
-        print(x1)
-        print(y1)
+    if (controller_2.buttonLeft.pressing()):
+        x1 = x1 + 0.1
+        wait(5, MSEC)
     EAngle, SAngle = IK_calc(x1, y1)
-    angle1 = EAngle
-    angle2 = SAngle
-    CBangle = float(BasePot.angle())*(270.0/4095.0)+0.1
-    CEangle = float(ElbowPot.angle())*(270.0/4095.0)+0.1
-    if (CBangle>(angle1-5.0) and CBangle<(angle1+5.0)):
+    CBangle = BasePot.angle()#*(270.0/4095.0)+0.1
+    CEangle = ElbowPot.angle()#*(270.0/4095.0)+0.1
+    if (CBangle>(EAngle-5.0) and CBangle<(EAngle+5.0)):
         Berror = 0
     else:
-        Berror = (CBangle-angle1)*(11./36.)
-    if (CEangle>(angle2-5.0) and CEangle<(angle2+5.0)):
+        Berror = (CBangle-EAngle)
+    if (CEangle>(SAngle-5.0) and CEangle<(SAngle+5.0)):
         Eerror = 0
     else:
-        Eerror = (CEangle-angle2)*(11/36)
+        Eerror = (CEangle-SAngle)
     Bspeed = pB*Berror
     Espeed = pE*Eerror
     BaseMotor.set_velocity(int(Bspeed), PERCENT)
     ElbowMotor.set_velocity(int(Espeed), PERCENT)
+    BaseMotor.spin(REVERSE)
+    ElbowMotor.spin(FORWARD)
     xey,yey, DistanceMiddle = cord_calc()
-    print(x1)
-    print(y1)
+    print(EAngle)
+    print(SAngle)
+    print(Berror)
+    print(CBangle)
+    print("")
+    print(CEangle)
     #brain.screen.print(xey)
     #brain.screen.print(" ")
     #brain.screen.print(yey)
