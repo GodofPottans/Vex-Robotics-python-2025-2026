@@ -58,9 +58,8 @@ print("\033[2J")
 # Library imports
 from vex import Motor, DirectionType
 
-LeftMotor = Motor(Ports.PORT15, GearSetting.RATIO_18_1, True)
-RightMotor = Motor(Ports.PORT13, GearSetting.RATIO_18_1, False)
-MiddleMotor = Motor(Ports.PORT14, GearSetting.RATIO_18_1, False) 
+def clamp(value, minimum, maximum):
+    return max(minimum, min(maximum, value))
 Pi = 3.1415926535897932384626433
 x1=7.5
 y1=7.5
@@ -76,8 +75,8 @@ def IK_calc(x, y):
     EG = 7.5
     c=math.pow(x,2)+math.pow(y,2)
     c = math.sqrt(math.fabs(c))
-    EAngle = math.atan(math.pow(SE,2)+math.pow(EG,2)-math.pow(c,2)/(2*SE*EG))*(180/Pi)
-    SAngle = (math.atan((SE**2+c**2-EG**2)/(2*SE*c))*(180/Pi))
+    EAngle = math.acos(clamp(SE**2+EG**2-c**2/(2*SE*EG), -1, 1))*(180/Pi)
+    SAngle = math.acos(clamp(SE**2+c**2-EG**2/(2*SE*c), -1, 1))*(180/Pi)
     return EAngle, SAngle
 def Move(speed, speed2):
     LeftMotor.set_velocity(speed, PERCENT)
@@ -98,7 +97,7 @@ def Turn(NewAngle):
 def Coordinate(x, y, angle):
     tot=12
     distance=360
-    while(x<x+1 & x>x-1):
+    while(x<x+1 and x>x-1):
         x,y = cord_calc()
         dlist=[1]
         for n in range (12):
@@ -106,7 +105,7 @@ def Coordinate(x, y, angle):
             pointx=math.cos(ntheta)
             pointy=math.sin(ntheta)
             distance=math.sqrt(((x-pointx)**2)+((y-pointy)**2))
-            if (x<4 & x>5 & y<8 & y>2):
+            if (x<4 and x>5 and y<8 and y>2):
                 dlist.append(distance)
             else:
                 dlist.append(999999999999999999999999999999999999)
@@ -122,9 +121,8 @@ def Coordinate(x, y, angle):
     angy = math.atan((x-deltax)/(y-deltay))*(180/Pi)
     Turn(angy)
    
-    while((deltax<x+1 & deltax>x-1)==False):
-        Move(100,100)
-
+    while((deltax<x+1 and deltax>x-1)==False):
+        Move(100,100)             
     LeftMotor.stop()
     RightMotor.stop()
    
@@ -144,11 +142,11 @@ def cord_calc():
     deltay = 0
     #Reset the damn relative position#
     distancetot = 0
-    axletrack = 8.25
+    axletrack = 10
     DistanceLeft = ((3.25*Pi)/360)*(LeftMotor.position())
     DistanceRight = ((3.25*Pi)/360)*(RightMotor.position())
     DistanceMiddle = ((1.625*Pi)/360)*(MiddleMotor.position())
-    Headingtot = (DistanceRight-DistanceLeft)/2+0.001
+    Headingtot = (DistanceRight-DistanceLeft)/axletrack+0.001
     r = ((90/Headingtot)*(DistanceLeft+DistanceRight))/Pi
     c = 2*(DistanceRight/Headingtot+(axletrack/2))*(math.sin(Headingtot/2))
     Distancetot = (DistanceLeft+DistanceRight)/2
@@ -164,9 +162,6 @@ def deadzone(value):
     if abs(value) < 5:
         value = 0
     return value
-
-def clamp(value, minimum, maximum):
-    return max(minimum, min(maximum, value))
 
 def exp_ramp(current, target, gain):
     return current + (target - current) * gain
@@ -233,12 +228,12 @@ while True:
     LeftMotor.spin(FORWARD)
     RightMotor.spin(FORWARD)
     MiddleMotor.spin(FORWARD)
-    if (controller_2.buttonR1.pressed):
+    if (controller_2.buttonR1.pressing()):
         ClampMotor.set_velocity(50, PERCENT)
         ClampMotor.spin(FORWARD)
     elif (controller_2.buttonR1.released):
         ClampMotor.stop()
-    if (controller_2.buttonL1.pressed):
+    if (controller_2.buttonL1.pressing()):
         ClampMotor.set_velocity(-50, PERCENT)
         ClampMotor.spin(FORWARD)
     elif (controller_2.buttonL1.released):
@@ -258,7 +253,7 @@ while True:
         wait(5, MSEC)
         print(x1)
         print(y1)
-    IK_calc(x1, y1)
+    EAngle, SAngle = IK_calc(x1, y1)
     angle1 = EAngle
     angle2 = SAngle
     CBangle = float(BasePot.angle())*(270.0/4095.0)+0.1
