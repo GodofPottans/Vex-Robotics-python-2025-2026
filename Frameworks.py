@@ -252,8 +252,8 @@ while True:
         x1 = x1 + 0.1
         wait(5, MSEC)
     EAngle, SAngle = IK_calc(x1, y1)
-    CBangle = BasePot.angle()#*(270.0/4095.0)+0.1
-    CEangle = ElbowPot.angle()#*(270.0/4095.0)+0.1
+    CBangle = BasePot.angle(DEGREES)#*(270.0/4095.0)+0.1
+    CEangle = ElbowPot.angle(DEGREES)#*(270.0/4095.0)+0.1
     if (CBangle>(EAngle-5.0) and CBangle<(EAngle+5.0)):
         Berror = 0
     else:
@@ -264,8 +264,8 @@ while True:
         Eerror = (CEangle-SAngle)
     Bspeed = pB*Berror
     Espeed = pE*Eerror
-    BaseMotor.set_velocity(int(Bspeed), PERCENT)
-    ElbowMotor.set_velocity(int(Espeed), PERCENT)
+    BaseMotor.set_velocity(FORWARD, int(Bspeed), PERCENT)
+    ElbowMotor.set_velocity(FORWARD, int(Espeed), PERCENT)
     BaseMotor.spin(REVERSE)
     ElbowMotor.spin(FORWARD)
     xey,yey, DistanceMiddle = cord_calc()
