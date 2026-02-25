@@ -82,6 +82,8 @@ def IK_calc(x, y):
         r = 0.00001
 
     EAngle = math.degrees(math.acos(clamp((SE**2+EG**2-c)/(2*SE*EG), -1, 1)))
+    if(x<0):
+        EAngle = 360-EAngle
     SAngle = math.degrees(math.acos(clamp((SE**2+c-EG**2)/(2*SE*r), -1, 1)) + math.atan2(y, x))
 
     if 10 < EAngle < 240 and 10 < SAngle < 240:
