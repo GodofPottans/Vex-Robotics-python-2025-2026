@@ -69,14 +69,26 @@ iB = 0.6
 iE = 0.6
 dB = 0.6
 dE = 0.6
+preve = 90
+prevs = 90
+
 def IK_calc(x, y):
-    global EAngle, SAngle
+    global preve, prevs
     SE = 7.5
-    EG = 7.5
-    c=x**2+y**2
-    EAngle = math.acos(clamp((SE**2+EG**2-c)/(2*SE*EG), -1, 1))*(180/Pi)
-    SAngle = math.acos(clamp((SE**2+c-EG**2)/(2*SE*c), -1, 1))*(180/Pi)+90
-    return EAngle, SAngle
+    EG = 7.0
+    c = x**2 + y**2
+    r = math.sqrt(c)
+    if r < 0.00001:
+        r = 0.00001
+
+    EAngle = math.degrees(math.acos(clamp((SE**2+EG**2-c)/(2*SE*EG), -1, 1)))
+    SAngle = math.degrees(math.acos(clamp((SE**2+c-EG**2)/(2*SE*r), -1, 1)) + math.atan2(y, x))
+
+    if 10 < EAngle < 240 and 10 < SAngle < 240:
+        preve = EAngle
+        prevs = SAngle
+    return preve, prevs
+
 def Move(speed, speed2):
     LeftMotor.set_velocity(speed, PERCENT)
     RightMotor.set_velocity(speed2, PERCENT)
@@ -247,38 +259,36 @@ while True:
         # ElbowMotor.spin(FORWARD)
         wait(5, MSEC)
     elif (controller_2.buttonRight.pressing()):
-        x1 = x1 + 0.1
+        x1 = x1 - 0.1
         # BaseMotor.spin(REVERSE)
         wait(5, MSEC)
     elif (controller_2.buttonLeft.pressing()):
-        x1 = x1 - 0.1
+        x1 = x1 + 0.1
         # BaseMotor.spin(FORWARD)
         wait(5, MSEC)
-    else:
-        BaseMotor.stop()
-        ElbowMotor.stop()
 
     if (y1>15):
         y1=15
     elif(y1<-15):
-        y1=15
+        y1=-15
     if (x1>15):
         x1=15
     elif (x1<-15):
         x1=-15
     EAngle, SAngle = IK_calc(x1, y1)
-    CBangle = BasePot.angle(DEGREES) #*(270.0/4095.0)+0.1
-    CEangle = ElbowPot.angle(DEGREES)#*(270.0/4095.0)+0.1
+    CBangle = BasePot.angle(DEGREES)
+    CEangle = ElbowPot.angle(DEGREES)
 
-    Berror = (CBangle-EAngle)
-
-    Eerror = (CEangle-SAngle)
-    Bspeed = pB*Berror
-    Espeed = pE*Eerror
+    Berror = (SAngle-CBangle)
+    Eerror = (EAngle-CEangle)
+    
+    Bspeed = clamp(pB*Berror, -100, 100)
+    Espeed = clamp(pE*Eerror, -100,100)
+    
     BaseMotor.set_velocity( int(Bspeed), PERCENT)
     ElbowMotor.set_velocity( int(Espeed), PERCENT)
-    # BaseMotor.spin(FORWARD)
-    # ElbowMotor.spin(REVERSE)
+    # BaseMotor.spin(FORWARD)#
+    # ElbowMotor.spin(FORWARD)#MAKE SURE TO ZERO IN THE POT
     xey,yey, DistanceMiddle = cord_calc()
     print("PredElbow")
     print(EAngle)
