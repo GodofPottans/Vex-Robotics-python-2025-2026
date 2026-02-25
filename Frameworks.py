@@ -61,35 +61,41 @@ from vex import Motor, DirectionType
 def clamp(value, minimum, maximum):
     return max(minimum, min(maximum, value))
 Pi = 3.1415926535897932384626433
-x1=7.5
-y1=7.5
-pB = 0.8
-pE = 0.8
+x1=3
+y1=6.0
+pB = 0.3
+pE = 0.3
 iB = 0.6
 iE = 0.6
 dB = 0.6
 dE = 0.6
-preve = 90
-prevs = 90
-
+preve = 0
+prevs = 0
+Prevspot = 0
+Prevepot = 0
 def IK_calc(x, y):
-    global preve, prevs
     SE = 7.5
     EG = 7.0
-    c = x**2 + y**2
-    r = math.sqrt(c)
-    if r < 0.00001:
-        r = 0.00001
-    SAngle = math.degrees(math.acos(clamp((SE**2+c-EG**2)/(2*SE*r), -1, 1)) + math.atan2(y, x))
-    x2=SE*math.cos(math.radians(SAngle))
-    EAngle = math.degrees(math.acos(clamp((SE**2+EG**2-c)/(2*SE*EG), -1, 1)))
-    if(x2<x):
-        EAngle = 360-EAngle
-    if 10 < EAngle < 240 and 10 < SAngle < 240:
-        preve = EAngle
-        prevs = SAngle
-    return preve, prevs
 
+    r = math.sqrt(x*x + y*y)
+    r = clamp(r, abs(SE - EG), SE + EG)
+
+    # Elbow internal angle
+    cosE = clamp((SE*SE + EG*EG - r*r)/(2*SE*EG), -1, 1)
+    internalE = math.degrees(math.acos(cosE))
+
+    # If 0° = straight arm:
+    EAngle = 180 - internalE
+
+    # Shoulder
+    cosS = clamp((SE*SE + r*r - EG*EG)/(2*SE*r), -1, 1)
+    offset = math.degrees(math.acos(cosS))
+
+    base = math.degrees(math.atan2(y, x))
+
+    SAngle = base - offset
+
+    return EAngle, SAngle
 def Move(speed, speed2):
     LeftMotor.set_velocity(speed, PERCENT)
     RightMotor.set_velocity(speed2, PERCENT)
@@ -279,32 +285,21 @@ while True:
     EAngle, SAngle = IK_calc(x1, y1)
     CBangle = BasePot.angle(DEGREES)
     CEangle = ElbowPot.angle(DEGREES)
-
-    Berror = (SAngle-CBangle)
-    Eerror = (EAngle-CEangle)
+    if (5>CBangle>0 and Prevspot>230):
+        CBangle = 250
+    if (5>CEangle>0 and Prevepot>230):
+        CEangle = 250
+    Berror = SAngle- CBangle
+    Eerror = EAngle- CEangle
     
     Bspeed = clamp(pB*Berror, -100, 100)
     Espeed = clamp(pE*Eerror, -100,100)
     
     BaseMotor.set_velocity( int(Bspeed), PERCENT)
     ElbowMotor.set_velocity( int(Espeed), PERCENT)
-    # BaseMotor.spin(FORWARD)#
-    # ElbowMotor.spin(FORWARD)#MAKE SURE TO ZERO IN THE POT
+    BaseMotor.spin(FORWARD)#
+    ElbowMotor.spin(FORWARD)#MAKE SURE TO ZERO IN THE POT
     xey,yey, DistanceMiddle = cord_calc()
-    print("PredElbow")
-    print(EAngle)
-    print("Pred Should:")
-    print(SAngle)
-    print("Elbow:")
-    print(EAngle)
-    print("Shoulder:")
-    print(SAngle)
-    print("PotShoulder:")
-    print(CBangle)
-    print("PotElbow:")
-    print(CEangle)
-    #brain.screen.print(xey)
-    #brain.screen.print(" ")
-    #brain.screen.print(yey)
-    #brain.screen.next_row()
+    Prevepot = CBangle
+    Prevspot = CEangle
     wait(20, MSEC)
