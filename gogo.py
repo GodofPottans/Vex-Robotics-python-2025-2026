@@ -263,25 +263,4 @@ while True:
     CEangle = ElbowPot.angle(DEGREES)#*(270.0/4095.0)+0.1
 
     Berror = (CBangle-EAngle)
-
-    # Eerror = (CEangle-SAngle)
-    # Bspeed = pB*Berror
-    # Espeed = pE*Eerror
-    # BaseMotor.set_velocity( int(Bspeed), PERCENT)
-    # ElbowMotor.set_velocity( int(-1*Espeed+90), PERCENT)
-    # BaseMotor.spin(FORWARD)
-    # ElbowMotor.spin(REVERSE)
-    # xey,yey, DistanceMiddle = cord_calc()
-    # print("Elbow:")
-    # print(EAngle)
-    # print("Shoulder:")
-    # print(SAngle)
-    # print("PotShoulder:")
-    # print(CBangle)
-    # print("PotElbow:")
-    print(CEangle)
-    #brain.screen.print(xey)
-    #brain.screen.print(" ")
-    #brain.screen.print(yey)
-    #brain.screen.next_row()
     wait(20, MSEC)
