@@ -283,12 +283,29 @@ while True:
     elif (x1<-15):
         x1=-15
     EAngle, SAngle = IK_calc(x1, y1)
+    raw = BasePot.angle(DEGREES)
+    delta = raw - prev_base_raw
+    # Detect wrap
+    if delta > 200:      # jumped 0 → 250 backwards
+        base_turns -= 1
+    elif delta < -200:   # jumped 250 → 0 forward
+        base_turns += 1
+    CBangle = raw + base_turns * 250
+    pre_base_raw = raw
+    
+    raw2 = BasePot.angle(DEGREES)
+    delta2 = raw2 - prev_base_raw2
+    # Detect wrap
+    if delta2 > 200:      # jumped 0 → 250 backwards
+        base_turns2 -= 1
+    elif delta2 < -200:   # jumped 250 → 0 forward
+        base_turns2 += 1
+    CBangle = raw2 + base_turns2 * 250
+    prev_base_raw2 = raw2
+    
     CBangle = BasePot.angle(DEGREES)
     CEangle = ElbowPot.angle(DEGREES)
-    if (5>CBangle>0 and Prevspot>230):
-        CBangle = 250
-    if (5>CEangle>0 and Prevepot>230):
-        CEangle = 250
+
     Berror = SAngle- CBangle
     Eerror = EAngle- CEangle
     
